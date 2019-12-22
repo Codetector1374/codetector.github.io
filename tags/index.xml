@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Codetector :: Yaotian Feng</title>
+    <link>https://codetector.org/tags/</link>
+    <description>Recent content in Tags on Codetector :: Yaotian Feng</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 22 Dec 2019 00:46:18 +0800</lastBuildDate>
+    
+	<atom:link href="https://codetector.org/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>IntelliJ</title>
+      <link>https://codetector.org/tags/intellij/</link>
+      <pubDate>Sun, 22 Dec 2019 00:46:18 +0800</pubDate>
+      
+      <guid>https://codetector.org/tags/intellij/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>java</title>
+      <link>https://codetector.org/tags/java/</link>
+      <pubDate>Sun, 22 Dec 2019 00:46:18 +0800</pubDate>
+      
+      <guid>https://codetector.org/tags/java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>kotlin</title>
+      <link>https://codetector.org/tags/kotlin/</link>
+      <pubDate>Sun, 22 Dec 2019 00:46:18 +0800</pubDate>
+      
+      <guid>https://codetector.org/tags/kotlin/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>llvm</title>
+      <link>https://codetector.org/tags/llvm/</link>
+      <pubDate>Sun, 22 Dec 2019 00:46:18 +0800</pubDate>
+      
+      <guid>https://codetector.org/tags/llvm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>plugin</title>
+      <link>https://codetector.org/tags/plugin/</link>
+      <pubDate>Sun, 22 Dec 2019 00:46:18 +0800</pubDate>
+      
+      <guid>https://codetector.org/tags/plugin/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>TableGen</title>
+      <link>https://codetector.org/tags/tablegen/</link>
+      <pubDate>Sun, 22 Dec 2019 00:46:18 +0800</pubDate>
+      
+      <guid>https://codetector.org/tags/tablegen/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

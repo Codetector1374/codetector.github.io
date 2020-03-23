@@ -4,7 +4,7 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="generator" content="Hugo 0.60.1" />
+  <meta name="generator" content="Hugo 0.66.0" />
   <link rel="stylesheet" href="https://codetector.org/css/bootstrap.min.css">
   
   
@@ -166,23 +166,23 @@ audio {
 <p>Before I dive into the guide, I just want to mention that there is an excellent guide from Jetbrains that cover the basics of setting up a project etc. I recommend reading the documentation to help you get started.</p>
 <p>This post will be updated as I progress through the project.</p>
 <h2 id="architecture">Architecture</h2>
-<p>Let's take a look at how a language plugin is structure in IntelliJ. At the very top, you have a <code>plugin.xml</code> file which helps the IDE to register your plugin. As for a language plugin, it is supported by the Jetbrains Grammar Kit lexer parser toolkit. It is essentially a beefed up version of JFlex and yacc. Once you have a lexer and parser defined, you can simply register a file type with the parser this will be a very basic language support plugin. At this point, you can begin to add custom classes for syntax highlighting based on tokens.</p>
+<p>Let&rsquo;s take a look at how a language plugin is structure in IntelliJ. At the very top, you have a <code>plugin.xml</code> file which helps the IDE to register your plugin. As for a language plugin, it is supported by the Jetbrains Grammar Kit lexer parser toolkit. It is essentially a beefed up version of JFlex and yacc. Once you have a lexer and parser defined, you can simply register a file type with the parser this will be a very basic language support plugin. At this point, you can begin to add custom classes for syntax highlighting based on tokens.</p>
 <h3 id="tablegen-language">TableGen Language</h3>
 <p>As this DSL is quite obscure, I will attach my bnf file used by GrammarKit for you reference. The syntax of TableGen is highly inspired by C++ and Basic.</p>
 <p>The latest version used in the plugin is availiable on Github: <a href="https://github.com/Codetector1374/tablegen-intellij/blob/master/src/main/resources/cn/codetector/tablegenintellij/grammar/tablegen.bnf">codetector1374/tablegen-intellij</a></p>
 <details>
 <summary>Sample TableGen File</summary>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">include <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">TL45Operators.td</span><span style="color:#e6db74">&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">include <span style="color:#e6db74">&#34;TL45Operators.td&#34;</span>
 
 
 <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">InstTL45</span><span style="color:#f92672">&lt;</span>dag outs, dag ins, bits<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">5</span><span style="color:#f92672">&gt;</span> binOpcode, string opcodestr, string argstr, list<span style="color:#f92672">&lt;</span>dag<span style="color:#f92672">&gt;</span> pattern<span style="color:#f92672">&gt;</span> <span style="color:#f92672">:</span> Instruction
 {
   field bits<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">32</span><span style="color:#f92672">&gt;</span> Inst;
 
-  let Namespace <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">TL45</span><span style="color:#e6db74">&#34;</span>;
+  let Namespace <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;TL45&#34;</span>;
   dag OutOperandList <span style="color:#f92672">=</span> outs;
   dag InOperandList <span style="color:#f92672">=</span> ins;
-  let AsmString <span style="color:#f92672">=</span> opcodestr <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">&#34;</span> <span style="color:#960050;background-color:#1e0010">#</span> argstr;
+  let AsmString <span style="color:#f92672">=</span> opcodestr <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">&#34;</span> <span style="color:#960050;background-color:#1e0010">#</span> argstr;
   let Pattern <span style="color:#f92672">=</span> pattern;
   let Size <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>; <span style="color:#75715e">//???
 </span><span style="color:#75715e"></span>  let Inst{<span style="color:#ae81ff">31</span><span style="color:#f92672">-</span><span style="color:#ae81ff">27</span>} <span style="color:#f92672">=</span> binOpcode;
@@ -200,20 +200,20 @@ audio {
 }
 
 <span style="color:#75715e">// Pseudo instructions
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Pseudo</span><span style="color:#f92672">&lt;</span>dag outs, dag ins, list<span style="color:#f92672">&lt;</span>dag<span style="color:#f92672">&gt;</span> pattern, string opcodestr <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span>, string argstr <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">&gt;</span>
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Pseudo</span><span style="color:#f92672">&lt;</span>dag outs, dag ins, list<span style="color:#f92672">&lt;</span>dag<span style="color:#f92672">&gt;</span> pattern, string opcodestr <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>, string argstr <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">&gt;</span>
     <span style="color:#f92672">:</span> InstTL45<span style="color:#f92672">&lt;</span>outs, ins, <span style="color:#ae81ff">0</span>, opcodestr, argstr, pattern<span style="color:#f92672">&gt;</span> {
   let isPseudo <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
   let isCodeGenOnly <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
 }
 
 <span style="color:#75715e">// 5 - op code  [31-27]
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 3 - mode     [26-24] {imm?, hilo, signed}
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 4 - dr       [23-20]
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 4 - sr1      [19-16]
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 4 - sr2      [15-12]  OR  16 - immediate [15 - 0]
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 12 - padding [11-0]       ...
+</span><span style="color:#75715e">// 3 - mode     [26-24] {imm?, hilo, signed}
+</span><span style="color:#75715e">// 4 - dr       [23-20]
+</span><span style="color:#75715e">// 4 - sr1      [19-16]
+</span><span style="color:#75715e">// 4 - sr2      [15-12]  OR  16 - immediate [15 - 0]
+</span><span style="color:#75715e">// 12 - padding [11-0]       ...
 </span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">RRRTypeInstr</span><span style="color:#f92672">&lt;</span>bits<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">5</span><span style="color:#f92672">&gt;</span> opcode, string opcodestr, list<span style="color:#f92672">&lt;</span>dag<span style="color:#f92672">&gt;</span> pattern<span style="color:#f92672">&gt;</span> <span style="color:#f92672">:</span> InstTL45<span style="color:#f92672">&lt;</span>(outs GRRegs:<span style="color:#960050;background-color:#1e0010">$</span>dr), (ins GRRegs:<span style="color:#960050;background-color:#1e0010">$</span>sr1, GRRegs:<span style="color:#960050;background-color:#1e0010">$</span>sr2), opcode, opcodestr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">$dr, $sr1, $sr2</span><span style="color:#e6db74">&#34;</span>, pattern<span style="color:#f92672">&gt;</span> {
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">RRRTypeInstr</span><span style="color:#f92672">&lt;</span>bits<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">5</span><span style="color:#f92672">&gt;</span> opcode, string opcodestr, list<span style="color:#f92672">&lt;</span>dag<span style="color:#f92672">&gt;</span> pattern<span style="color:#f92672">&gt;</span> <span style="color:#f92672">:</span> InstTL45<span style="color:#f92672">&lt;</span>(outs GRRegs:<span style="color:#960050;background-color:#1e0010">$</span>dr), (ins GRRegs:<span style="color:#960050;background-color:#1e0010">$</span>sr1, GRRegs:<span style="color:#960050;background-color:#1e0010">$</span>sr2), opcode, opcodestr, <span style="color:#e6db74">&#34;$dr, $sr1, $sr2&#34;</span>, pattern<span style="color:#f92672">&gt;</span> {
   bits<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">4</span><span style="color:#f92672">&gt;</span> dr;
   bits<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">4</span><span style="color:#f92672">&gt;</span> sr1;
   bits<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">4</span><span style="color:#f92672">&gt;</span> sr2;
@@ -229,12 +229,13 @@ audio {
 </code></pre></div></details>
 
 
+
       </main>
     </div>
     
 <footer id="footer" class="mt-auto text-center text-muted">
   <div class="container">
-    Yaotian Feng / Codetector (2019). Creative Common 4.0 (CC-BY-NC-SA)
+    Yaotian Feng / Codetector (2020). Creative Common 4.0 (CC-BY-NC-SA)
   </div>
 </footer>
 

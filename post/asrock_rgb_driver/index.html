@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://codetector.org/css/bootstrap.min.css">
   
   
-  <title>Posts | Codetector :: Yaotian Feng</title>
+  <title>ASRock RGB Driver VR | Codetector :: Yaotian Feng</title>
   <style>
 .container {
   max-width: 900px;
@@ -106,13 +106,11 @@ audio {
       
       
       
-       
-        
         
       
     
     
-    <a class="nav-link nav-link-active" href="/post/"><i data-feather="file-text"></i> Posts</a>
+    <a class="nav-link " href="/post/"><i data-feather="file-text"></i> Posts</a>
   
     
     
@@ -134,38 +132,8 @@ audio {
       <main id="main">
         
 
-<h1>Posts</h1>
+<h1>ASRock RGB Driver VR</h1>
 
-
-<p>
-  <a class="font-125" href="https://codetector.org/post/hakutaku/smp/">Hakutaku: SMP on x86-64</a>
-  <br>
-  
-
-<i data-feather="calendar"></i> <time datetime="2020-07-30">Jul 30, 2020</time>
-
-  <br>
-  <i data-feather="tag"></i>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/hakutaku">Hakutaku</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/operating-systems">Operating Systems</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/osdev">OSDev</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/x86">X86</a>
-  
-
-</p>
-
-<p>
-  <a class="font-125" href="https://codetector.org/post/asrock_rgb_driver/">ASRock RGB Driver VR</a>
-  <br>
-  
 
 <i data-feather="calendar"></i> <time datetime="2020-06-20">Jun 20, 2020</time>
 
@@ -188,38 +156,38 @@ audio {
   <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/windows">Windows</a>
   
 
-</p>
+<br><br>
+<!--
+Recently my friend built a new Threadripper desktop. Although being three years 
+late to the game, it is still a huge upgrade from laptop. The only annoying thing
+is that the ASRock X399 motherboard we use has some RGB lights that are quite
+annoying to say the least. The only way to control them is through this ASRock
+application under windows.
 
-<p>
-  <a class="font-125" href="https://codetector.org/post/intellij_tablegen_plugin/">IntelliJ Plugin for TableGen</a>
-  <br>
-  
+# Early Investigation
 
-<i data-feather="calendar"></i> <time datetime="2019-12-22">Dec 22, 2019</time>
+We first probed around the userspace application to see what it does to communicate with the LEDs. 
+It loads some ASRockIODriver dll that exports a function called setRGB. This seems very simple,
+before we dive deep into reversing this DLL, we decided to do a quick sanity check by setting a
+break point on this function see if it actually gets called. To our suprise, the break point is 
+never hit. This is a dead end then. (Glad we didn't spend hours working on this dead code path)
 
-  <br>
-  <i data-feather="tag"></i>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/intellij">IntelliJ</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/plugin">plugin</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/kotlin">kotlin</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/java">java</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/tablegen">TableGen</a>
-  
-  
-  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/llvm">llvm</a>
-  
+Then we probed futher, we see the application opens a interesting handle to `AsDrv` device. This
+looks like some sort of handle to a kernel driver. Then looking at the files it loaded, we see that
+it loads this file called `AsrDrv103.sys`. It seems to be a very simple ioctl driver.
 
-</p>
+# AsrDrv103.sys
+A quick look at this file provides some very interesting details. The code seems to read and write 
+all the CR registers. My first instinct is why would it ever need to touch any of the CRx registers?
+At the beginning of this very large switch statement that controls what memory, register and IO ports
+to read/write we found some ASE decryption code used to pre-process the argument.
+
+It turns out that all the operation logic is actually encoded in the user-space application, and it 
+passes the value and and address it want's to write through an AES encrypted buffer to the kernel space
+so this driver can execute it. However, using AES as the only means of protection is obviously insecure.
+For a proof of concept we were able to triple-fault the computer by sending an request to zero CR3.
+-->
+<p>TODO</p>
 
 
 

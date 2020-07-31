@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Codetector :: Yaotian Feng</title>
-    <link>https://codetector.org/post/</link>
-    <description>Recent content in Posts on Codetector :: Yaotian Feng</description>
+    <title>X86 on Codetector :: Yaotian Feng</title>
+    <link>https://codetector.org/tags/x86/</link>
+    <description>Recent content in X86 on Codetector :: Yaotian Feng</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Thu, 30 Jul 2020 00:00:00 -0400</lastBuildDate>
     
-	<atom:link href="https://codetector.org/post/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://codetector.org/tags/x86/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -28,15 +28,6 @@ Multi-core Multi-core often sounds like a scary topic for most hobbyist OS devel
       
       <guid>https://codetector.org/post/asrock_rgb_driver/</guid>
       <description>TODO</description>
-    </item>
-    
-    <item>
-      <title>IntelliJ Plugin for TableGen</title>
-      <link>https://codetector.org/post/intellij_tablegen_plugin/</link>
-      <pubDate>Sun, 22 Dec 2019 00:46:18 +0800</pubDate>
-      
-      <guid>https://codetector.org/post/intellij_tablegen_plugin/</guid>
-      <description>I recently been working on creating a LLVM backend for the Z80 CPU architechture. (A blog series to come) In the process of describing the architechture, LLVM use a DSL called TableGen Target Description Language to describe the target architechture. Everything from registers, instructions to calling conventions are first described in this TableGen format. Although there are existing plugins for VSCode, Vim, and Emacs, my main IDE for working on the project is CLion.</description>
     </item>
     
   </channel>

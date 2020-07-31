@@ -1,0 +1,298 @@
+<!doctype html>
+
+<html lang="en" class="h-100">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="generator" content="Hugo 0.73.0" />
+  <link rel="stylesheet" href="https://codetector.org/css/bootstrap.min.css">
+  
+  
+  <title>Hakutaku: SMP on x86-64 | Codetector :: Yaotian Feng</title>
+  <style>
+.container {
+  max-width: 900px;
+}
+#nav a {
+  font-weight: bold;
+  color: inherit;
+}
+#nav a.nav-link-active {
+  background-color: #212529;
+  color: #fff;
+}
+#nav-border {
+  border-bottom: 1px solid #212529;
+}
+#main {
+  margin-top: 1em;
+  margin-bottom: 4em;
+  line-height: 2em;
+  font-size: large;
+}
+#home-jumbotron {
+  background-color: inherit;
+}
+#footer .container {
+  padding: 1em 0;
+}
+#footer a {
+  color: inherit;
+  text-decoration: underline;
+}
+.font-125 {
+  font-size: 125%;
+}
+.tag-btn {
+  margin-bottom: 0.3em;
+}
+pre {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 16px;
+}
+pre code {
+  padding: 0;
+  font-size: inherit;
+  color: inherit; 
+  background-color: transparent;
+  border-radius: 0;
+}
+code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #c7254e;
+  background-color: #f9f2f4;
+  border-radius: 4px;
+}
+img,
+iframe,
+embed,
+video,
+audio {
+  max-width: 100%;
+}
+.card-img,
+.card-img-top,
+.card-img-bottom {
+  width: initial;
+}
+</style>
+</head>
+  <body class="d-flex flex-column h-100">
+    <div id="nav-border" class="container">
+  <nav id="nav" class="nav justify-content-center">
+  
+  
+  
+    
+    
+      
+      
+      
+      
+      
+        
+      
+    
+    
+    <a class="nav-link " href="/"><i data-feather="home"></i> Home</a>
+  
+    
+    
+      
+      
+      
+      
+      
+        
+      
+    
+    
+    <a class="nav-link " href="/post/"><i data-feather="file-text"></i> Posts</a>
+  
+    
+    
+      
+      
+      
+      
+      
+        
+      
+    
+    
+    <a class="nav-link " href="/about/"><i data-feather="alert-circle"></i> About</a>
+  
+  </nav>
+</div>
+
+    <div class="container">
+      <main id="main">
+        
+
+<h1>Hakutaku: SMP on x86-64</h1>
+
+
+<i data-feather="calendar"></i> <time datetime="2020-07-30">Jul 30, 2020</time>
+
+  <br>
+  <i data-feather="tag"></i>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/hakutaku">Hakutaku</a>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/operating-systems">Operating Systems</a>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/osdev">OSDev</a>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/x86">X86</a>
+  
+
+<br><br>
+<p>This is one post in my blog series about developing an Operating System for the <code>x86-64</code> platform in Rust.
+I aim to cover a small topic in each post along with some code samples to get you started if you are
+also interested in doing such a project. The complete project is on <a href="https://github.com/codetector1374/hakutaku">Github</a></p>
+<h1 id="multi-core">Multi-core</h1>
+<p>Multi-core often sounds like a scary topic for most hobbyist OS developers. Today
+we will tackle this problem together in our Rust OS, Hakutaku.</p>
+<h1 id="background">Background</h1>
+<h2 id="x86-64-smp-start-up-general-process">X86-64 SMP Start-Up General Process</h2>
+<p>In <code>x86-64</code> the system / BIOS selects a processor as the <em>Bootstrap Processor</em>
+or BSP, and the rest will be selected as <em>Application Processor</em> or AP. All the
+APs will be put into a &ldquo;waiting&rdquo; state until a INIT/SIPI (Start-up IPI) is
+received. Without any special operations, all of your code will run on this
+processor. In order to enable all the other processors, we need to do a few
+things.</p>
+<ul>
+<li>Locate and identify all the other processors on the system.</li>
+<li>Send <code>INIT</code> and <code>SIPI</code> <em>Inter-Processor Interrupts</em> (IPI) to each enabled
+processor.</li>
+<li>Setup temporary GDT / IDT for the APs to bootstrap into <code>Long Mode</code></li>
+<li>Add the APs into the scheduler</li>
+</ul>
+<h2 id="apic--lapic">APIC / LAPIC</h2>
+<p>APIC or the Advanced Programmable Interrupt Controller, is the new mechanism
+Intel introduced as part of the Intel Multi-Processor (MP) specification. This
+is the new mechanism employed by modern processors to manage interrupts.</p>
+<p>The APIC system consists of two main components, the Local APIC (LAPIC) and the
+IO APIC. Each logical processor on the system will have its own LAPIC and all
+processors on a system will share one single IO APIC. On boot, the IOAPIC should
+be configured to pass/emulate the Legacy (8259) PIC&rsquo;s interrupts. For now we will
+only be configuring the LAPIC. IOAPIC is relatively complicated, we will leave
+it for a later post.</p>
+<h3 id="the-local-apic">The Local APIC</h3>
+<p>The Local APIC is relatively simple. It consists of three sets of registers,
+the Interrupt Command Word (ICW), APIC Local Timer, and Local Vector Table (LVT).
+Information on register layout can be found in the Intel Manual (Vol. 3, Section 10.4.1, Table 10-1)</p>
+<h4 id="interrupt-command-word-icw">Interrupt Command Word (ICW)</h4>
+<p>This is probably the most important register as of waking up all the other cores.
+This is the register that you will need to probe in order to send IPIs. The ICW
+controls what kind of interrupt it is sending, which vector should it be send to,
+and who is the recipient of the
+said interrupt.</p>
+<h4 id="local-apic-timer">Local APIC Timer</h4>
+<p>The Local APIC Timer as the name suggests, is local to each logical processor,
+and is capable of operating in one of three modes: One-Shot, Periodic and
+TSC-Deadline. In our case, since this timer will be generating the periodic
+interrupt for our scheduler on each core, we will be configuring it to the
+periodic mode.</p>
+<h4 id="local-vector-table">Local Vector Table</h4>
+<p>Unlike the Interrupt Vector Table which determines what action to take on each
+interrupt vector, the LVT controls what vector / interrupt to invoke when the
+specified event is triggered. In our case we will need to configure the Spurious
+Interrupt vector and Local Timer Interrupt vector.</p>
+<h2 id="advanced-configuration-and-power-interface-acpi">Advanced Configuration and Power Interface (ACPI)</h2>
+<p>I am sure many of you have heard or have seen this word before. This is a table
+that describes the configuration of the hardware that our OS is currently running
+on. It includes many information about IO Mapping, IRQ Routing, Processor Topology
+and much more.</p>
+<p>Although some of the tables in ACPI are quite hard to parse (i.e. <code>DSDT</code> &amp; <code>SSDT</code>),
+the <code>MADT</code> table we need right now is rather easy.</p>
+<h3 id="multiple-apic-description-table-madt">Multiple APIC Description Table (MADT)</h3>
+<p>MADT is a simple table that contains entries describing all the LAPIC and by
+association their logical processors. Each entry will have describe the state
+that the processor is in as well as its processor ID and LAPIC ID.</p>
+<h1 id="implementation">Implementation</h1>
+<p>To add multi-core capability to Hakutaku, we will need to first locate all the
+other logical processors. There are multiple ways of doing this, at the time of
+writing, the most reliable and widely used method is to locate and parse the ACPI
+tables.</p>
+<h2 id="acpi-tables">ACPI Tables</h2>
+<p>There are two main ways to locate the ACPI Tables, depending on if you are booting
+from BIOS or EFI, the method will vary. On traditional BIOS boot mode, the ACPI
+table pointer is loaded in to certain section of the system memory (BIOS / BIOS
+shadow area). You can simply search for the string <code>RSD PTR</code> (non-null terminated).
+When you find the pointer, you can begin to check its signature and its version
+number to determine if you are looking at a ACPI 1.0 (version number 0) or later
+ACPI tables.</p>
+<p>Follow the <code>RSD PTR</code> you should be able to locate the remaining parts of the table
+and find the previously mentioned <code>MADT</code> section to list all the available
+processors. Before you proceed further in waking up those processors, you should
+always check that they are in a Waiting for SIPI mode. (aka not disabled)</p>
+<h2 id="waking-up">Waking Up</h2>
+<p>Now comes the interesting part, actually waking up the sleeping cores. To do this
+I recommend start with only one AP. This will help you detect problem in the
+process.</p>
+<p><strong>NOTE:</strong> When you wake up a application processor, it will boot to <code>Real Mode</code>
+and have access to only the first 1MB of <strong>Physical</strong> Memory. So you should plan
+for that and place some code for the APs to run initially. Here I just have a
+halt loop and a output to the POST code hex display (Often on I/O Port 0x80).</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#75715e">; intel Syntax, nasm</span>
+
+<span style="color:#66d9ef">align</span> <span style="color:#ae81ff">4096</span>
+<span style="color:#66d9ef">bits</span> <span style="color:#ae81ff">16</span>
+
+ap_boot:
+    <span style="color:#a6e22e">mov</span> al, <span style="color:#ae81ff">0x45</span>
+    <span style="color:#a6e22e">outb</span> al, <span style="color:#ae81ff">0x80</span>
+.loop:
+    <span style="color:#a6e22e">hlt</span>
+    <span style="color:#a6e22e">jmp</span> ap_boot.loop
+</code></pre></div><p>Note the entry point have to be aligned to 4K and located in the first MiB of
+memory.</p>
+<p>According to intel manual, the protocol for waking up APs consists of the
+following:</p>
+<ol>
+<li>Send an INIT.</li>
+<li>Wait for 10ms.</li>
+<li>Send the first SIPI.</li>
+<li>Wait for 200uS.</li>
+<li>If the processor is still not running, send a second SIPI.</li>
+</ol>
+<h3 id="the-sipi-interrupt">The SIPI Interrupt</h3>
+<p>The SIPI interrupt is a very special one, it kicks off the processor from the
+default &ldquo;idling&rdquo; state. Since we need to tell the processor where to begin
+execution, the vector field for this interrupt is special.</p>
+<p>Instead of specifying a interrupt vector, the value in the vector field is used
+to select a 4K frame starting from physical address 0 to begin execution hence
+the code needs to be aligned on a 4K boundary below 1 MiB.</p>
+<h2 id="getting-to-long-mode">Getting to Long Mode</h2>
+<p>// TODO</p>
+
+
+
+      </main>
+    </div>
+    
+<footer id="footer" class="mt-auto text-center text-muted">
+  <div class="container">
+    Yaotian Feng / Codetector (2020). Creative Common 4.0 (CC-BY-NC-SA)
+  </div>
+</footer>
+
+    <script src="https://codetector.org/js/feather.min.js"></script>
+<script>
+  feather.replace()
+</script>
+
+
+    
+  
+
+  </body>
+</html>

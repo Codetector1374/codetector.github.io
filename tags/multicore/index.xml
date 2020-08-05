@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>multicore on Codetector :: Yaotian Feng</title>
+    <link>https://codetector.org/tags/multicore/</link>
+    <description>Recent content in multicore on Codetector :: Yaotian Feng</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 30 Jul 2020 00:00:00 -0400</lastBuildDate>
+    
+	<atom:link href="https://codetector.org/tags/multicore/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Hakutaku: SMP on x86-64</title>
+      <link>https://codetector.org/post/hakutaku/smp/</link>
+      <pubDate>Thu, 30 Jul 2020 00:00:00 -0400</pubDate>
+      
+      <guid>https://codetector.org/post/hakutaku/smp/</guid>
+      <description>This is one post in my blog series about developing an Operating System for the x86-64 platform in Rust. I aim to cover a small topic in each post along with some code samples to get you started if you are also interested in doing such a project. The complete project is on Github
+Multi-core Multi-core often sounds like a scary topic for most hobbyist OS developers. Today we will tackle this problem together in our Rust OS, Hakutaku.</description>
+    </item>
+    
+  </channel>
+</rss>

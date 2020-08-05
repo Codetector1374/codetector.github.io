@@ -18,6 +18,11 @@
   </url>
   
   <url>
+    <loc>https://codetector.org/tags/multicore/</loc>
+    <lastmod>2020-07-30T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://codetector.org/tags/operating-systems/</loc>
     <lastmod>2020-07-30T00:00:00-04:00</lastmod>
   </url>
@@ -29,6 +34,11 @@
   
   <url>
     <loc>https://codetector.org/post/</loc>
+    <lastmod>2020-07-30T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/tags/smp/</loc>
     <lastmod>2020-07-30T00:00:00-04:00</lastmod>
   </url>
   

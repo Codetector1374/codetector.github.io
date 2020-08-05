@@ -152,6 +152,12 @@ audio {
   
   <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/x86">X86</a>
   
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/smp">SMP</a>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/multicore">multicore</a>
+  
 
 <br><br>
 <p>This is one post in my blog series about developing an Operating System for the <code>x86-64</code> platform in Rust.
@@ -272,7 +278,151 @@ execution, the vector field for this interrupt is special.</p>
 to select a 4K frame starting from physical address 0 to begin execution hence
 the code needs to be aligned on a 4K boundary below 1 MiB.</p>
 <h2 id="getting-to-long-mode">Getting to Long Mode</h2>
-<p>// TODO</p>
+<p>Now that the cores all woke up and executing code, we can think about how to get
+them into long mode. If you happened to write your own bootloader this would be
+simply repeating the steps but without having to load the binary this time. (It
+is already in memory) However, in my case I am booted into Protected Mode by
+a multiboot compatible bootloader, there will be quite a few steps to go.</p>
+<h3 id="setup-protected-mode-gdt">Setup Protected Mode GDT</h3>
+<p>Although there is nothing preventing you from directly entering long mode from
+real mode, I decided to go through protected mode as a launch pad.</p>
+<p>According to the Intel Manual, to enter protected mode, there are two main steps:</p>
+<ol>
+<li>set the protected mode bit in CR0 (bit 0)</li>
+<li>we need to setup at least some sort of segmentation system (We will not be
+enabling paging in protected mode).</li>
+</ol>
+<p>For #2 The easiest way to achieve this is to hard code a gdt with two entries:
+one for CS(code segment) and one for DS(data segment). Then all we need to do is
+to load this GDT and point ss, ds, cs to the correct selector by using mov and ljmp
+respectively.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm">core_wakeup:
+    <span style="color:#a6e22e">cli</span>                     <span style="color:#75715e">; Disable interrupts, we want to be left alone
+</span><span style="color:#75715e"></span>
+    <span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">ax</span>, <span style="color:#66d9ef">ax</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>, <span style="color:#66d9ef">ax</span>              <span style="color:#75715e">; Set DS-register to 0 - used by lgdt
+</span><span style="color:#75715e"></span>
+    <span style="color:#a6e22e">lgdt</span> [<span style="color:#66d9ef">gdt_desc</span>]         <span style="color:#75715e">; Load the GDT descriptor
+</span><span style="color:#75715e"></span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cr0</span>            <span style="color:#75715e">; Copy the contents of CR0 into EAX
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">or</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span>               <span style="color:#75715e">; Set bit 0
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">mov</span> <span style="color:#66d9ef">cr0</span>, <span style="color:#66d9ef">eax</span>            <span style="color:#75715e">; Copy the contents of EAX into CR0
+</span><span style="color:#75715e"></span>
+    <span style="color:#a6e22e">jmp</span> <span style="color:#ae81ff">08</span><span style="color:#66d9ef">h</span>:<span style="color:#66d9ef">smp_protected_entry</span>
+
+gdt:                    <span style="color:#75715e">; Address for the GDT
+</span><span style="color:#75715e"></span>gdt_null:               <span style="color:#75715e">; Null Segment
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">dd</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#a6e22e">dd</span> <span style="color:#ae81ff">0</span>
+
+gdt_code:               <span style="color:#75715e">; Code segment, read/execute, nonconforming
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0xFFFF</span>
+        <span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">10011010</span><span style="color:#66d9ef">b</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">11001111</span><span style="color:#66d9ef">b</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">0</span>
+
+gdt_data:               <span style="color:#75715e">; Data segment, read/write, expand down
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0xFFFF</span>
+        <span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">10010010</span><span style="color:#66d9ef">b</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">11001111</span><span style="color:#66d9ef">b</span>
+        <span style="color:#a6e22e">db</span> <span style="color:#ae81ff">0</span>
+
+gdt_end:                <span style="color:#75715e">; Used to calculate the size of the GDT
+</span><span style="color:#75715e"></span>
+gdt_desc:                       <span style="color:#75715e">; The GDT descriptor
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">dw</span> <span style="color:#66d9ef">gdt_end</span> - <span style="color:#66d9ef">gdt</span> - <span style="color:#ae81ff">1</span>    <span style="color:#75715e">; Limit (size)
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">dd</span> <span style="color:#66d9ef">gdt</span>                  <span style="color:#75715e">; Address of the GDT
+</span><span style="color:#75715e"></span>
+<span style="color:#a6e22e">bits</span> <span style="color:#ae81ff">32</span>
+<span style="color:#a6e22e">section</span> <span style="color:#66d9ef">.smp.protected</span>
+
+smp_protected_entry:
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>, <span style="color:#ae81ff">0x10</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>, <span style="color:#66d9ef">ax</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ss</span>, <span style="color:#66d9ef">ax</span>
+
+    <span style="color:#a6e22e">jmp</span> <span style="color:#66d9ef">_ap_start</span>
+
+</code></pre></div><h3 id="jump-to-long-mode">Jump to Long Mode</h3>
+<p>Now all that&rsquo;s left is to setup the last bit of code to get us into Long Mode.
+Since we already have the initial GDT setup from kernel&rsquo;s initial booting process,
+we can simply reuse that structure and code to setup long mode. And the process
+of getting to long mode is very similar to what we did above for protected mode.
+Except this time we will be enable paging and loading CR3 with the initial page
+table. (This will later be replaced with a page table assigned for each core)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm">_ap_start:
+    <span style="color:#75715e">; load P4 to cr3 register (cpu uses this to access the P4 table)
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">p4_table</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cr3</span>, <span style="color:#66d9ef">eax</span>
+
+    <span style="color:#75715e">; enable PAE-flag in cr4 (Physical Address Extension)
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cr4</span>
+    <span style="color:#a6e22e">or</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span> <span style="color:#960050;background-color:#1e0010">&lt;&lt;</span> <span style="color:#ae81ff">5</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cr4</span>, <span style="color:#66d9ef">eax</span>
+
+    <span style="color:#75715e">; set the long mode bit in the EFER MSR (model specific register)
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ecx</span>, <span style="color:#ae81ff">0xC0000080</span>
+    <span style="color:#a6e22e">rdmsr</span>
+    <span style="color:#a6e22e">or</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span> <span style="color:#960050;background-color:#1e0010">&lt;&lt;</span> <span style="color:#ae81ff">8</span>
+    <span style="color:#a6e22e">wrmsr</span>
+
+    <span style="color:#75715e">; enable paging in the cr0 register
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cr0</span>
+    <span style="color:#a6e22e">or</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span> <span style="color:#960050;background-color:#1e0010">&lt;&lt;</span> <span style="color:#ae81ff">31</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cr0</span>, <span style="color:#66d9ef">eax</span>
+
+    <span style="color:#75715e">; JMP to long
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">lgdt</span> [<span style="color:#66d9ef">gdt64.pointer</span>]
+
+    <span style="color:#a6e22e">jmp</span> <span style="color:#66d9ef">gdt64.code</span>:<span style="color:#66d9ef">_ap_long_mode_start</span>
+
+.loop:
+    <span style="color:#a6e22e">hlt</span>
+    <span style="color:#a6e22e">jmp</span> <span style="color:#66d9ef">_ap_start.loop</span>
+
+
+enable_paging:
+    <span style="color:#75715e">; load P4 to cr3 register (cpu uses this to access the P4 table)
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">p4_table</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cr3</span>, <span style="color:#66d9ef">eax</span>
+
+    <span style="color:#75715e">; enable PAE-flag in cr4 (Physical Address Extension)
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cr4</span>
+    <span style="color:#a6e22e">or</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span> <span style="color:#960050;background-color:#1e0010">&lt;&lt;</span> <span style="color:#ae81ff">5</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cr4</span>, <span style="color:#66d9ef">eax</span>
+
+    <span style="color:#75715e">; set the long mode bit in the EFER MSR (model specific register)
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ecx</span>, <span style="color:#ae81ff">0xC0000080</span>
+    <span style="color:#a6e22e">rdmsr</span>
+    <span style="color:#a6e22e">or</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span> <span style="color:#960050;background-color:#1e0010">&lt;&lt;</span> <span style="color:#ae81ff">8</span>
+    <span style="color:#a6e22e">wrmsr</span>
+
+    <span style="color:#75715e">; enable paging in the cr0 register
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cr0</span>
+    <span style="color:#a6e22e">or</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span> <span style="color:#960050;background-color:#1e0010">&lt;&lt;</span> <span style="color:#ae81ff">31</span>
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cr0</span>, <span style="color:#66d9ef">eax</span>
+
+    <span style="color:#a6e22e">ret</span>
+
+<span style="color:#a6e22e">section</span> <span style="color:#66d9ef">.rodata.init</span>
+gdt64:
+    <span style="color:#a6e22e">dq</span> <span style="color:#ae81ff">0</span> <span style="color:#75715e">; zero entry
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">.code</span>: <span style="color:#66d9ef">equ</span> <span style="color:#66d9ef">$</span> - <span style="color:#66d9ef">gdt64</span> <span style="color:#75715e">; new
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">dq</span> (<span style="color:#ae81ff">1</span><span style="color:#960050;background-color:#1e0010">&lt;&lt;</span><span style="color:#ae81ff">43</span>) <span style="color:#960050;background-color:#1e0010">|</span> (<span style="color:#ae81ff">1</span><span style="color:#960050;background-color:#1e0010">&lt;&lt;</span><span style="color:#ae81ff">44</span>) <span style="color:#960050;background-color:#1e0010">|</span> (<span style="color:#ae81ff">1</span><span style="color:#960050;background-color:#1e0010">&lt;&lt;</span><span style="color:#ae81ff">47</span>) <span style="color:#960050;background-color:#1e0010">|</span> (<span style="color:#ae81ff">1</span><span style="color:#960050;background-color:#1e0010">&lt;&lt;</span><span style="color:#ae81ff">53</span>) <span style="color:#75715e">; code segment
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">.pointer</span>:
+    <span style="color:#a6e22e">dw</span> <span style="color:#66d9ef">$</span> - <span style="color:#66d9ef">gdt64</span> - <span style="color:#ae81ff">1</span>
+    <span style="color:#a6e22e">dq</span> <span style="color:#66d9ef">gdt64</span>
+</code></pre></div><h1 id="summary">Summary</h1>
+<p>The whole process sure looks daunting at first, but it is actually rather
+straight forward to implement if you have got this far in your kernel. Once you
+are in long mode, simply proceed to replace the page table and GDT / TSS with a
+custom one. Just be careful that you can not reuse a TSS on multiple cores.</p>
+<p>Hopefully this guide is helpful to you, and feel free to contact me for any typo/
+mistakes. You can find my contact information in the about tab.</p>
 
 
 

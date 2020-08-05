@@ -21,6 +21,15 @@
     </item>
     
     <item>
+      <title>multicore</title>
+      <link>https://codetector.org/tags/multicore/</link>
+      <pubDate>Thu, 30 Jul 2020 00:00:00 -0400</pubDate>
+      
+      <guid>https://codetector.org/tags/multicore/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Operating Systems</title>
       <link>https://codetector.org/tags/operating-systems/</link>
       <pubDate>Thu, 30 Jul 2020 00:00:00 -0400</pubDate>
@@ -35,6 +44,15 @@
       <pubDate>Thu, 30 Jul 2020 00:00:00 -0400</pubDate>
       
       <guid>https://codetector.org/tags/osdev/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SMP</title>
+      <link>https://codetector.org/tags/smp/</link>
+      <pubDate>Thu, 30 Jul 2020 00:00:00 -0400</pubDate>
+      
+      <guid>https://codetector.org/tags/smp/</guid>
       <description></description>
     </item>
     

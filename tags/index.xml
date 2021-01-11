@@ -6,10 +6,42 @@
     <description>Recent content in Tags on Codetector :: Yaotian Feng</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 30 Jul 2020 00:00:00 -0400</lastBuildDate>
+    <lastBuildDate>Tue, 01 Dec 2020 00:00:00 -0400</lastBuildDate><atom:link href="https://codetector.org/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hardware</title>
+      <link>https://codetector.org/tags/hardware/</link>
+      <pubDate>Tue, 01 Dec 2020 00:00:00 -0400</pubDate>
+      
+      <guid>https://codetector.org/tags/hardware/</guid>
+      <description></description>
+    </item>
     
-	<atom:link href="https://codetector.org/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HT32</title>
+      <link>https://codetector.org/tags/ht32/</link>
+      <pubDate>Tue, 01 Dec 2020 00:00:00 -0400</pubDate>
+      
+      <guid>https://codetector.org/tags/ht32/</guid>
+      <description></description>
+    </item>
     
+    <item>
+      <title>Keyboard</title>
+      <link>https://codetector.org/tags/keyboard/</link>
+      <pubDate>Tue, 01 Dec 2020 00:00:00 -0400</pubDate>
+      
+      <guid>https://codetector.org/tags/keyboard/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Reverse Engineering</title>
+      <link>https://codetector.org/tags/reverse-engineering/</link>
+      <pubDate>Tue, 01 Dec 2020 00:00:00 -0400</pubDate>
+      
+      <guid>https://codetector.org/tags/reverse-engineering/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Hakutaku</title>
@@ -80,15 +112,6 @@
       <pubDate>Sat, 20 Jun 2020 00:00:00 -0400</pubDate>
       
       <guid>https://codetector.org/tags/driver/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Reverse Engineering</title>
-      <link>https://codetector.org/tags/reverse-engineering/</link>
-      <pubDate>Sat, 20 Jun 2020 00:00:00 -0400</pubDate>
-      
-      <guid>https://codetector.org/tags/reverse-engineering/</guid>
       <description></description>
     </item>
     

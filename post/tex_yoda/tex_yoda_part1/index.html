@@ -1,0 +1,253 @@
+<!doctype html>
+
+<html lang="en" class="h-100">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="generator" content="Hugo 0.79.0" />
+  <link rel="stylesheet" href="https://codetector.org/css/bootstrap.min.css">
+  
+  
+  <title>Keyboard Hacking - TEX Yoda II (1) HW Analysis | Codetector :: Yaotian Feng</title>
+  <style>
+.container {
+  max-width: 900px;
+}
+#nav a {
+  font-weight: bold;
+  color: inherit;
+}
+#nav a.nav-link-active {
+  background-color: #212529;
+  color: #fff;
+}
+#nav-border {
+  border-bottom: 1px solid #212529;
+}
+#main {
+  margin-top: 1em;
+  margin-bottom: 4em;
+  line-height: 2em;
+  font-size: large;
+}
+#home-jumbotron {
+  background-color: inherit;
+}
+#footer .container {
+  padding: 1em 0;
+}
+#footer a {
+  color: inherit;
+  text-decoration: underline;
+}
+.font-125 {
+  font-size: 125%;
+}
+.tag-btn {
+  margin-bottom: 0.3em;
+}
+pre {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 16px;
+}
+pre code {
+  padding: 0;
+  font-size: inherit;
+  color: inherit; 
+  background-color: transparent;
+  border-radius: 0;
+}
+code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #c7254e;
+  background-color: #f9f2f4;
+  border-radius: 4px;
+}
+img,
+iframe,
+embed,
+video,
+audio {
+  max-width: 100%;
+}
+.card-img,
+.card-img-top,
+.card-img-bottom {
+  width: initial;
+}
+</style>
+</head>
+  <body class="d-flex flex-column h-100">
+    <div id="nav-border" class="container">
+  <nav id="nav" class="nav justify-content-center">
+  
+  
+  
+    
+    
+      
+      
+      
+      
+      
+        
+      
+    
+    
+    <a class="nav-link " href="/"><i data-feather="home"></i> Home</a>
+  
+    
+    
+      
+      
+      
+      
+      
+        
+      
+    
+    
+    <a class="nav-link " href="/post/"><i data-feather="file-text"></i> Posts</a>
+  
+    
+    
+      
+      
+      
+      
+      
+        
+      
+    
+    
+    <a class="nav-link " href="/about/"><i data-feather="alert-circle"></i> About</a>
+  
+  </nav>
+</div>
+
+    <div class="container">
+      <main id="main">
+        
+
+<h1>Keyboard Hacking - TEX Yoda II (1) HW Analysis</h1>
+
+
+<i data-feather="calendar"></i> <time datetime="2020-12-01">Dec 01, 2020</time>
+
+  <br>
+  <i data-feather="tag"></i>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/hardware">Hardware</a>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/keyboard">Keyboard</a>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/reverse-engineering">Reverse Engineering</a>
+  
+  
+  <a class="btn btn-sm btn-outline-dark tag-btn" href="https://codetector.org/tags/ht32">HT32</a>
+  
+
+<br><br>
+<p>Recently someone on reddit sent me a TEX Yoda II keyboard. It is certainly an
+interesting board. Not only it is a 60% which greatly saves desk space, it also
+integrates a IBM style &ldquo;trackpoint&rdquo; so you can put away your mouse too.</p>
+<p>Unfortunately the firmware that came with the board is really boring and lack some
+features that I think is really needed to make a 60% keyboard work. Such as having
+layers that can be put into a lock mode, or having my typical caps becomes ESC and
+also act as a layer trigger so I can have arrow keys overlay onto the <code>h</code> <code>j</code> <code>k</code> <code>l</code>
+keys. (VIM Binding)</p>
+<p>So the idea is to port a popular keyboard firmware: <a href="https://qmk.fm">QMK</a> onto it.</p>
+<p>As with all my QMK ports before, it all starts with reverse engineering.</p>
+<p>Upon first inspection, we can see all the chips are on the back of the board.
+And none of them are covered in black goo. Beautiful. Among them we can see</p>
+<p><img src="/img/tex_yoda/board_with_chips.jpeg" alt=""></p>
+<ul>
+<li><code>HT32F1654</code> - (Blue Bottom) Main MCU , ARM Cortex-M3 from Holtek. This is very commonly used in keyboards</li>
+<li><code>TPS61195</code> - (Orange) A LED (strip) Driver Chip from TI.</li>
+<li><code>SN8F26E611L</code> - (Blue Top) This is the tiny chip on top of the trackpoint connector. It is a 8-bit MCU. (This is a TSSOP-10 package with hard to see markings, we will come back to this later)</li>
+</ul>
+<h2 id="initial-thoughts">Initial Thoughts</h2>
+<p>At first glance, the turns out to be SN8 MCU chip did not look like a micro-controller to me,
+since with the small packaging, I assumed it is some kind of level shifter, since the markings
+are really hard to read.</p>
+<p>Just from looking at this board layout, I assumed that the HT32 does the matrix scanning as well
+as polling data from the PS2 trackpoint use a software bit-banged protocol. Just as I was trying to map out the connection from the trackpoint connector to the HT32, I started to realize
+one important thing: None of the connection goes to the main MCU. It also seems to have
+its own power rails, also at ~3V.</p>
+<p>With some probing around and looking at the traces, I found that all the PS2
+connections goes to that small TSSOP-10 chip. So I started trying to search for
+what it is. Despite looking under a microscope at various angles, I was only
+able to tell it is a &ldquo;SN8&rdquo;.</p>
+<p>From my recent work on the Kemove Snowfox, I was able to recall this SN prefix
+is probably some SONiX micro-controller. So went on their website, and luckily,
+the only SN8 controller they have in a TSSOP10 package is the <code>SN8F26E611L</code>.
+Compare the pin map, VCC and GND all seems to be at the correct location.
+So this confirms the chip is in fact a <code>SN8F26E611L</code> 8-bit micro-controller.</p>
+<h2 id="track-point-communication">Track Point Communication</h2>
+<p>Now that we know there&rsquo;s another controller that is polling the track point data
+we need to figure out how is this communicated to the main MCU, which eventually
+converts it into USB HID data so the computer could recgonize the mouse actions.
+We can see 3 connections from this 8-bit micro to the main MCU, and looking at
+the pin function assignments, 2 of those GPIOs are assigned UART Rx and Tx.
+It is natural to assume the communication is some kind of serial comm.
+With that I connected my logic analyzer, hoping to capture some startup initial
+setup data.</p>
+<p><img src="/img/tex_yoda/comm_cap1.png" alt=""></p>
+<p>And oh boy was I wrong, the data oh the wire does not look anything like UART.
+There is no possible way for UART/RS232 data to look like this. This is clearly
+some kind of synchrous communication going on. Since the bottom trace looks too
+much like a clock.</p>
+<h3 id="spi">SPI?</h3>
+<p>I begin to suspect this is some kind of a strip down version of SPI, since the
+SN8 has native SPI capabilities. So the 3 connections would be data, clock, and
+data in the other direction. However, did some longer captures, found that the
+third channel only toggled once since power up, it was low for the first burst
+of data, then it remained high. So this didn&rsquo;t really make a whole lot of sense
+to be SPI.</p>
+<h3 id="could-it-be-i2c">Could it be I2C?</h3>
+<p>Closely inspect the start of each burst, we can see Channel 1 always goes to low
+right before Channel 0. If this sounds familiar to some of you, that&rsquo;s right,
+this is exactally how I2C master signaling control of the bus. When we set
+CH0 as SDA, and CH1 as SCL, sure enough the bus got decoded as I2C perfectly.</p>
+<p><img src="/img/tex_yoda/cap_i2c.png" alt=""></p>
+<p>The only question left here is how dose the SN8 perform I2C when the datasheet
+claims no support of I2C at all? Bit-bang, of course. This looks like a software
+emulated I2C. The above capture is a comunciation where the SN8 is the bus master.
+(triggered when moving the trackpoint) As you can see, when the SDA goes from low
+to high, the clock slows for a cycle. This is a good indication that some bit-bang
+is happening, since the CPU has to probably takes a different (longer) branch
+for a L-H transition.</p>
+<h3 id="whats-next">What&rsquo;s next?</h3>
+<p>Since it is unlikely to be able to extract the SN8 firmware without buying some
+specialized tools (SN-Link), we will have to start the reverse engineering effor
+by attempting to extract the HT32 firmware. (Hint, Readout Protection is On)
+Luckily TEX provided a firmware update package that should contain the firmware.</p>
+
+
+
+      </main>
+    </div>
+    
+<footer id="footer" class="mt-auto text-center text-muted">
+  <div class="container">
+    Yaotian Feng / Codetector (2020). Creative Common 4.0 (CC-BY-NC-SA)
+  </div>
+</footer>
+
+    <script src="https://codetector.org/js/feather.min.js"></script>
+<script>
+  feather.replace()
+</script>
+
+
+    
+  
+
+  </body>
+</html>

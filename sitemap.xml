@@ -3,17 +3,52 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://codetector.org/tags/hardware/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/tags/ht32/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/tags/keyboard/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/post/tex_yoda/tex_yoda_part1/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/post/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/tags/reverse-engineering/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codetector.org/tags/</loc>
+    <lastmod>2020-12-01T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://codetector.org/tags/hakutaku/</loc>
     <lastmod>2020-07-30T00:00:00-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://codetector.org/post/hakutaku/smp/</loc>
-    <lastmod>2020-07-30T00:00:00-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://codetector.org/</loc>
     <lastmod>2020-07-30T00:00:00-04:00</lastmod>
   </url>
   
@@ -33,17 +68,7 @@
   </url>
   
   <url>
-    <loc>https://codetector.org/post/</loc>
-    <lastmod>2020-07-30T00:00:00-04:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://codetector.org/tags/smp/</loc>
-    <lastmod>2020-07-30T00:00:00-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://codetector.org/tags/</loc>
     <lastmod>2020-07-30T00:00:00-04:00</lastmod>
   </url>
   
@@ -64,11 +89,6 @@
   
   <url>
     <loc>https://codetector.org/tags/driver/</loc>
-    <lastmod>2020-06-20T00:00:00-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://codetector.org/tags/reverse-engineering/</loc>
     <lastmod>2020-06-20T00:00:00-04:00</lastmod>
   </url>
   

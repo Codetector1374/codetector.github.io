@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Reverse Engineering on Codetector :: Yaotian Feng</title>
-    <link>https://codetector.org/tags/reverse-engineering/</link>
-    <description>Recent content in Reverse Engineering on Codetector :: Yaotian Feng</description>
+    <title>Hardware on Codetector :: Yaotian Feng</title>
+    <link>https://codetector.org/tags/hardware/</link>
+    <description>Recent content in Hardware on Codetector :: Yaotian Feng</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 01 Dec 2020 00:00:00 -0400</lastBuildDate><atom:link href="https://codetector.org/tags/reverse-engineering/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 01 Dec 2020 00:00:00 -0400</lastBuildDate><atom:link href="https://codetector.org/tags/hardware/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Keyboard Hacking - TEX Yoda II (1) HW Analysis</title>
       <link>https://codetector.org/post/tex_yoda/tex_yoda_part1/</link>
@@ -15,15 +15,6 @@
       <guid>https://codetector.org/post/tex_yoda/tex_yoda_part1/</guid>
       <description>Recently someone on reddit sent me a TEX Yoda II keyboard. It is certainly an interesting board. Not only it is a 60% which greatly saves desk space, it also integrates a IBM style &amp;ldquo;trackpoint&amp;rdquo; so you can put away your mouse too.
 Unfortunately the firmware that came with the board is really boring and lack some features that I think is really needed to make a 60% keyboard work. Such as having layers that can be put into a lock mode, or having my typical caps becomes ESC and also act as a layer trigger so I can have arrow keys overlay onto the h j k l keys.</description>
-    </item>
-    
-    <item>
-      <title>ASRock RGB Driver VR</title>
-      <link>https://codetector.org/post/asrock_rgb_driver/</link>
-      <pubDate>Sat, 20 Jun 2020 00:00:00 -0400</pubDate>
-      
-      <guid>https://codetector.org/post/asrock_rgb_driver/</guid>
-      <description>TODO</description>
     </item>
     
   </channel>
